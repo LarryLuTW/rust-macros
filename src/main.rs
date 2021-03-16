@@ -18,7 +18,6 @@ fn bar(n: i32) {
     }
 }
 
-// #[trace(logging)]
 #[trace]
 fn fib(n: u32) -> u32 {
     match n {
@@ -28,6 +27,8 @@ fn fib(n: u32) -> u32 {
     }
 }
 
+// count_digits(50) = 2
+// count_digits(300) = 3
 fn count_digits(n: u32) -> u32 {
     let mut n = n;
 
@@ -41,6 +42,8 @@ fn count_digits(n: u32) -> u32 {
     unreachable!()
 }
 
+static VAR: u32 = 100;
+
 lazy_static! {
     static ref FIB5: u32 = fib(5);
 }
@@ -49,36 +52,67 @@ fn main() {
     // 1. format!
     let str = format!("Hello, I am {}, born in {}", "Larry", 1996);
     println!("{}", str);
-    let str = format!("{a} + {b} = {c}", a = 1, b = 2, c = 1 + 2);
-    println!("{}", str);
     let str = format!("{:04} {:.3}", 42, 12.3456);
+    println!("{}", str);
+    let str = format!("{a} + {b} = {c}", a = 1, b = 2, c = 1 + 2);
     println!("{}", str);
 
     // 2. vec!
-    let vec = vec![1, 2, 3];
-    println!("{:?}", vec);
-    let vec = vec![0; 5];
+    let pow_of_10 = vec![1, 10, 100, 1000];
+    println!("{:?}", pow_of_10);
+    // pow_of_10.push(123);
+
+    let vec = vec![10; 5];
     println!("{:?}", vec);
 
-    // 3. unreachable!
+    // 3. maplit
+    use std::collections::{HashMap, HashSet};
+
+    let mut _m = HashMap::new();
+    _m.insert("one", 1);
+    _m.insert("two", 2);
+    _m.insert("three", 3);
+
+    let mut _starbugs = HashSet::new();
+    _starbugs.insert("Larry");
+    _starbugs.insert("GQSM");
+    _starbugs.insert("Luka");
+    _starbugs.insert("Smalltown");
+
+    let _m: HashMap<&str, _> = [("one", 1), ("two", 2), ("three", 3)]
+        .iter()
+        .cloned()
+        .collect();
+
+    use maplit::{hashmap, hashset};
+
+    let _m = hashmap! {
+        "one"   =>  1,
+        "two"   =>  2,
+        "three" =>  3,
+    };
+
+    let _starbugs = hashset! {"Larry", "Luka", "Smalltown", "GQSM"};
+
+    // 4. unreachable!
     let digits_of_102 = count_digits(102);
     println!("{}", digits_of_102);
 
-    // 4. matches!
+    // 5. matches!
     // show expanded
     let o = 'o';
-    let is_matched = matches!(o, 'a' | 'e' | 'i' | 'o' | 'u');
-    println!("{}", is_matched);
+    let is_vowel = matches!(o, 'a' | 'e' | 'i' | 'o' | 'u');
+    println!("{}", is_vowel);
 
     let n = 500;
     let is_matched = matches!(n, 1..=1000);
     println!("{}", is_matched);
 
     let f = 'f';
-    let is_matched = matches!(f, 'A'..='Z' | 'a'..='z');
-    println!("{}", is_matched);
+    let is_alphabet = matches!(f, 'A'..='Z' | 'a'..='z');
+    println!("{}", is_alphabet);
 
-    // 5. serde_json!
+    // 6. serde_json!
     use serde_json::json;
 
     let larry = json!({
@@ -91,46 +125,23 @@ fn main() {
     });
     println!("first phone number: {}", larry["phones"][1]);
 
-    let annie = json!({
-        "name": format!("{} {}", "Annie", "Wang"),
-        "age": 24 + 1,
-    });
+    use serde_json::{from_str, Value};
+
+    let json_str = r#"{ "name": "Annie", "age": 25 }"#;
+    let annie: Value = from_str(json_str).unwrap();
+
     println!("Annie's age: {}", annie["age"]);
 
-    // 6. lazy static
+    // 7. lazy static
+    println!("{}", VAR);
     println!("{}", *FIB5);
 
-    // 7. maplit
-    // https://stackoverflow.com/questions/28392008/more-concise-hashmap-initialization
-    use std::collections::HashMap;
-    let _m: HashMap<&str, _> = [("one", 1), ("two", 2), ("three", 3)]
-        .iter()
-        .cloned()
-        .collect();
-
-    use maplit::hashmap;
-    let _m = hashmap! {
-        "one"=>1,
-        "two"=> 2,
-        "three" => 3,
-    };
-
-    use std::collections::HashSet;
-    let _s: HashSet<&str> = ["Larry", "Luka", "Smalltown", "GQSM"]
-        .iter()
-        .cloned()
-        .collect();
-
-    use maplit::hashset;
-    let _s = hashset! {"Larry", "Luka", "Smalltown", "GQSM"};
-
     // 8. dbg!
-    let a = 10;
-    dbg!(a);
-    dbg!(a * 2 + 1);
+    let a = dbg!(1 + 2 + 3 + 4);
+    let _b: u32 = dbg!((1..10).sum());
 
-    let b = dbg!(a * 2 + 1);
-    if dbg!(b + a) > 10 {
+    let c = dbg!(a * 2 + 1);
+    if dbg!(dbg!(c + a) > 10) {
         // do something
     }
 
@@ -138,10 +149,10 @@ fn main() {
     use simple_logger::SimpleLogger;
     SimpleLogger::new().init().unwrap();
 
-    use log::{error, info};
+    use log::{error, info, trace};
     error!("Some error occurs");
-    info!("Hello World");
     info!("I am Larry");
+    trace!("Hello World");
 
     // 10. func_trace
     let _ = fib(4);
